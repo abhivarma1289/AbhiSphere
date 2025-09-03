@@ -4,13 +4,16 @@ import App from "./App.tsx";
 import { CacheProvider } from "@emotion/react";
 import createEmotionCache from "./emotionCache";
 import "./global.css"; // optional plain CSS file for small tweaks
+import { AppThemeProvider } from "./theme/ThemeProvider";
 
 const cache = createEmotionCache();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <CacheProvider value={cache}>
-      <App />
+      <AppThemeProvider>
+        <App />
+      </AppThemeProvider>
     </CacheProvider>
   </React.StrictMode>
 );

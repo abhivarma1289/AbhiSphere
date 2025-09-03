@@ -1,30 +1,61 @@
 import { useState } from "react";
-import { Button, Container, Stack, TextField, Typography } from "@mui/material";
-import { login } from "../../utils/auth";
-import GoogleButton from "./GoogleButton";
+import { TextField, Button, Stack, Typography, Alert } from "@mui/material";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
+  const auth = getAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [pass, setPass] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  async function handleEmailLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
-      await login(email, password);
-      alert("Logged in!");
-    } catch (e) {
-      alert((e as Error).message);
+      await signInWithEmailAndPassword(auth, email, pass);
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      setError(err?.message ?? "Login failed");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      setError(err?.message ?? "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <Container maxWidth="xs" sx={{ py: 6 }}>
-      <Typography variant="h5" gutterBottom>Login</Typography>
-      <Stack spacing={2}>
-        <TextField label="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <TextField type="password" label="Password" value={password} onChange={e => setPassword(e.target.value)} />
-        <Button variant="contained" onClick={handleLogin}>Login</Button>
-        <GoogleButton />
+    <Stack spacing={2} sx={{ maxWidth: 420, mx: "auto", mt: 8 }}>
+      <Typography variant="h4" fontWeight={700}>Login</Typography>
+      {error && <Alert severity="error">{error}</Alert>}
+      <Stack component="form" onSubmit={handleEmailLogin} spacing={2}>
+        <TextField label="Email" value={email} onChange={e => setEmail(e.target.value)} type="email" required />
+        <TextField label="Password" value={pass} onChange={e => setPass(e.target.value)} type="password" required />
+        <Button type="submit" variant="contained" disabled={loading}>Login</Button>
       </Stack>
-    </Container>
+
+      <Button variant="outlined" onClick={handleGoogle} disabled={loading}>
+        Continue with Google
+      </Button>
+
+      <Typography variant="body2">
+        Don’t have an account? <Link to="/signup">Sign up</Link>
+      </Typography>
+    </Stack>
   );
 }

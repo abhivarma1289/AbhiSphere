@@ -10,7 +10,11 @@ export class AuthModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .exclude({ path: 'health', method: RequestMethod.ALL }) // public health
+      .exclude(
+        { path: 'health', method: RequestMethod.ALL },
+        { path: 'docs', method: RequestMethod.ALL },
+        { path: 'docs-json', method: RequestMethod.ALL },
+      )
       .forRoutes('*');
   }
 }
